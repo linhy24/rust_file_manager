@@ -1,4 +1,4 @@
-# rust_file_manager
+# Rust_file_manager
 
 ## Team members
 #### Yonas Mekonnen<br/>Hongyang Lin<br/>Spencer Chan
