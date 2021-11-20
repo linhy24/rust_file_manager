@@ -33,5 +33,5 @@ Add more flags/options for customization
 - Unify the commands under one “super” command/CLI
 
 ## Cited references
-https://github.com/cmsc388z/assignments/blob/main/assignment3/assignment3.md 
+https://github.com/cmsc388z/assignments/blob/main/assignment3/assignment3.md<br/> 
 https://docs.rs/clap/2.33.3/clap/
