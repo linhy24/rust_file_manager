@@ -19,13 +19,13 @@ For each command, we plan to adopt the idea of threading. Some commands may have
 In the end, users should be able to call a “super” command that unifies the functionalities of all three commands above, specified by -a(add), -r(remove), and -f(find). We expect to make use of rust crates like clap to implement our project.
 
 ## Goals
-100% goal, representing what you expect to achieve 
+- 100% goal, representing what you expect to achieve:<br/>
 Get all 6 commands/flags to work
 
-75% goal (if things go slower than expected)
+- 75% goal (if things go slower than expected):<br/>
 Get 4 out of 6 commands/flags to work
 
-125% goal (if the project turns out to be easier than you thought). 
+- 125% goal (if the project turns out to be easier than you thought):<br/>
 Add more flags/options for customization
 
 ## Specific aims and objectives
