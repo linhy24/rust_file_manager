@@ -7,7 +7,22 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn run(config: &Config) -> Result<(), &'static str> {
+pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
+
+    let dirs: Vec<PathBuf> = config.parse_dirs()?;
+
+    // let mut filename: Option<File> = config.parse_and_create_file();
+
+    // let file_path = dirs;
+
+    // if let Some(outfile) = filename {
+    //     writeln!(outfile, "{}", String::from(dirs.to_str().unwrap()));
+    // }
+    println!("hey");
+    Ok(())
+}
+
+pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
     // 1. parse patterns
     let v_pats: Vec<Regex> = config.parse_patterns()?;
 
@@ -36,15 +51,67 @@ pub fn run(config: &Config) -> Result<(), &'static str> {
     Ok(())
 }
 
-// TODO: move this code to the outside...
-pub struct Config<'a> {
+pub struct FindConfig<'a> {
     pub dirs: Vec<&'a str>,
     pub patterns: Vec<&'a str>,
     pub output: Option<&'a str>,
     pub size: Option<&'a str>,
 }
 
-impl<'a> Config<'a> {
+pub struct AddConfig<'a> {
+    pub dirs: Vec<&'a str>,
+    pub filename: Option<&'a str>,
+}
+
+impl<'a> AddConfig<'a> {
+    pub fn from_args(args: &'a ArgMatches) -> Self {
+        let dirs: Vec<&'a str> = args.values_of("dirs").unwrap().collect();
+        let filename: Option<&'a str> = args.value_of("output");
+
+        AddConfig { dirs, filename }
+    }
+
+    pub fn parse_dirs(&self) -> Result<Vec<PathBuf>, &'static str> {
+        let mut res: Vec<PathBuf> = Vec::new();
+        let mut parsed = false;
+        for d in &self.dirs {
+            let dir = PathBuf::from(d);
+            if dir.is_dir() {
+                let file_path = dir.join(self.filename.unwrap());
+                match std::fs::write(file_path, "Hello") {
+                    Ok(_) => {}
+                    Err(err) => {
+                        eprintln!("Invalid writeln error: {}", err);
+                    }
+                }
+                parsed = true;
+                res.push(dir);
+            } else {
+                eprintln!("{} is an invalid directory or is inaccessible", d);
+            }
+        }
+
+        if parsed {
+            Ok(res)
+        } else {
+            Err("No valid directories given")
+        }
+    }
+
+    // pub fn parse_and_create_file(&self) -> Option<File> {
+    //     let file = self.filename;
+    //     if let Some(f) = file {
+    //         if let Ok(file) = File::create(f) {
+    //             return Some(file);
+    //         } else {
+    //             eprintln!("Couldn't open {} for writing, not writing to file", f);
+    //         }
+    //     }
+    //     None
+    // }
+}
+
+impl<'a> FindConfig<'a> {
     // you need to use explit lifetime here as well
     pub fn from_args(args: &'a ArgMatches) -> Self {
         let patterns: Vec<&'a str> = args.values_of("patterns").unwrap().collect();
@@ -52,7 +119,7 @@ impl<'a> Config<'a> {
         let output: Option<&'a str> = args.value_of("output");
         let size: Option<&'a str> = args.value_of("size");
 
-        Config {
+        FindConfig {
             patterns,
             dirs,
             output,
@@ -71,6 +138,7 @@ impl<'a> Config<'a> {
                 eprintln!("{} is not a valid regular expression, ignoring", p);
             }
         }
+
         if parsed {
             Ok(res)
         } else {
@@ -90,6 +158,7 @@ impl<'a> Config<'a> {
                 eprintln!("{} is an invalid directory or is inaccessible", d);
             }
         }
+
         if parsed {
             Ok(res)
         } else {
@@ -151,6 +220,7 @@ pub struct MyFile {
     pub path: String,
     pub size_bytes: u64,
 }
+
 impl MyFile {
     /// Instantiate a MyFile struct from the path of a file.
     pub fn from_path(path: &Path) -> Result<Self, &'static str> {
