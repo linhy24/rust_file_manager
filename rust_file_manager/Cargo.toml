@@ -13,9 +13,6 @@ path = "src/lib.rs"
 name = "rust_find"
 path = "src/main.rs"
 
-[[bin]]
-name = "rust_add"
-path = "src/main.rs"
 
 [dependencies]
 regex = "1.5"
