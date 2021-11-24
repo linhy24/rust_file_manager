@@ -4,7 +4,7 @@
 #### Yonas Mekonnen<br/>Hongyang Lin<br/>Spencer Chan
 
 ## Introduction and background
-Our project is to make a CLI that will perform basic linux file management. The CLI would have 3 commands for adding, finding, and removing files and directories. 
+Our project is to make a CLI that will perform basic linux file management. The CLI would have 6 commands (and additional flags) to emulate basic linux commands.
 
 These commands would map to the linux commands listed below.
 - rust-add -> touch and mkdir
@@ -16,7 +16,7 @@ These commands would map to the linux commands listed below.
 - rust-sub -> modified tr (tr++)
 - -thread -> make use of threading
 
-In the end, users should be able to call a “super” command that unifies the functionalities of all three commands above, specified by -a(add), -r(remove), and -f(find). We expect to make use of rust crates like clap to implement our project.
+In the end, users should be able to call a “super” command that unifies the functionalities of all three commands above. For instance, a command can contain the functionalities of -a(add), -r(remove), and -f(find). We expect to make use of rust crates like clap to implement our project.
 
 We plan to adopt the idea of threading as our stretch goal. The idea is that some commands may have multiple inputs so we can use threads to process each input. Users use a flag -thread to indicate that they want to run the command using threads.
 
