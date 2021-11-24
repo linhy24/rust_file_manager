@@ -10,9 +10,8 @@ name = "lib"
 path = "src/lib.rs"
 
 [[bin]]
-name = "rust_find"
+name = "rust"
 path = "src/main.rs"
-
 
 [dependencies]
 regex = "1.5"

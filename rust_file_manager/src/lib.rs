@@ -7,7 +7,73 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn run(config: &Config) -> Result<(), &'static str> {
+/**************************** rust_add starts **************************** */
+pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
+    let v_dirs: Vec<PathBuf> = config.parse_dirs()?;
+    let v_files: Vec<&str> = config.parse_files()?;
+
+    for d in v_dirs {
+        for f in &v_files {
+            let file_path = d.join(f);
+            match std::fs::write(file_path, "") {
+                Ok(_) => {}
+                Err(err) => {
+                    eprintln!("Invalid writeln error: {}", err);
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub struct AddConfig<'a> {
+    pub dirs: Vec<&'a str>,
+    pub files: Vec<&'a str>,
+}
+
+impl<'a> AddConfig<'a> {
+    pub fn from_args(args: &'a ArgMatches) -> Self {
+        let dirs: Vec<&'a str> = args.values_of("dirs").unwrap().collect();
+        let files: Vec<&'a str> = args.values_of("files").unwrap().collect();
+
+        AddConfig { dirs, files }
+    }
+
+    pub fn parse_dirs(&self) -> Result<Vec<PathBuf>, &'static str> {
+        let mut res: Vec<PathBuf> = Vec::new();
+        let mut parsed = false;
+        for d in &self.dirs {
+            let dir = PathBuf::from(d);
+            if dir.is_dir() {
+                parsed = true;
+                res.push(dir);
+            } else {
+                eprintln!("{} is an invalid directory or is inaccessible", d);
+            }
+        }
+        if parsed {
+            Ok(res)
+        } else {
+            Err("No valid directories given")
+        }
+    }
+
+    pub fn parse_files(&self) -> Result<Vec<&str>, &'static str> {
+        let mut res: Vec<&str> = Vec::new();
+
+        for f in &self.files {
+            res.push(*f);
+        }
+
+        Ok(res)
+    }
+}
+
+/**************************** rust_add ends **************************** */
+
+/**************************** rust_find starts **************************** */
+pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
     // 1. parse patterns
     let v_pats: Vec<Regex> = config.parse_patterns()?;
 
@@ -37,14 +103,14 @@ pub fn run(config: &Config) -> Result<(), &'static str> {
 }
 
 // TODO: move this code to the outside...
-pub struct Config<'a> {
+pub struct FindConfig<'a> {
     pub dirs: Vec<&'a str>,
     pub patterns: Vec<&'a str>,
     pub output: Option<&'a str>,
     pub size: Option<&'a str>,
 }
 
-impl<'a> Config<'a> {
+impl<'a> FindConfig<'a> {
     // you need to use explit lifetime here as well
     pub fn from_args(args: &'a ArgMatches) -> Self {
         let patterns: Vec<&'a str> = args.values_of("patterns").unwrap().collect();
@@ -52,7 +118,7 @@ impl<'a> Config<'a> {
         let output: Option<&'a str> = args.value_of("output");
         let size: Option<&'a str> = args.value_of("size");
 
-        Config {
+        FindConfig {
             patterns,
             dirs,
             output,
@@ -151,6 +217,7 @@ pub struct MyFile {
     pub path: String,
     pub size_bytes: u64,
 }
+
 impl MyFile {
     /// Instantiate a MyFile struct from the path of a file.
     pub fn from_path(path: &Path) -> Result<Self, &'static str> {
@@ -189,3 +256,5 @@ pub fn display(files: &[MyFile], output: &mut Option<File>) -> Option<Vec<String
         Some(res)
     }
 }
+
+/**************************** rust_find ends **************************** */

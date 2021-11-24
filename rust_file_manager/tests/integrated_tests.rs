@@ -3,7 +3,7 @@ mod tests {
     #[test]
     fn test_main() {
         use clap::{App, Arg}; // tell Rust you will use these two structs in clap
-        use lib::{run, Config}; // tell Rust you will use these two things from our "lib" module
+        use lib::{run_find, FindConfig}; // tell Rust you will use these two things from our "lib" module
         let matches = App::new("rust_find")
             .version("0.1.0")
             .author("Your Name <you.email@umd.edu>") 
@@ -35,9 +35,9 @@ mod tests {
 //            .get_matches();
             .get_matches_from(vec!["rust-find", "--patterns=.*/.rs", "--output=./tests.out", "--dirs", "./src", "./tests"]);
 
-        let args = Config::from_args(&matches); // will be defined later
+        let args = FindConfig::from_args(&matches); // will be defined later
 
-        if let Err(err) = run(&args) {
+        if let Err(err) = run_find(&args) {
             //Error handling here!
             panic!("{}", err)
         }
@@ -46,11 +46,11 @@ mod tests {
     }
     #[test]
     fn test_parse_dirs() {
-        use lib::Config;
+        use lib::FindConfig;
         let dirs = vec!["."];
         let patterns = vec!["."];
         // all ok
-        let cfg = Config {
+        let cfg = FindConfig {
             dirs,
             patterns,
             output: None,
@@ -61,7 +61,7 @@ mod tests {
         assert_eq!(res.unwrap().len(), 1);
 
         // one ok
-        let cfg2 = Config {
+        let cfg2 = FindConfig {
             dirs: vec![".", "/dev/null"],
             ..cfg
         };
@@ -69,7 +69,7 @@ mod tests {
         assert!(res2.is_ok());
         assert_eq!(res2.unwrap().len(), 1);
 
-        let cfg3 = Config {
+        let cfg3 = FindConfig {
             dirs: vec!["/dev/null"],
             ..cfg2
         };
@@ -79,12 +79,12 @@ mod tests {
 
     #[test]
     fn test_parse_size() {
-        use lib::Config;
+        use lib::FindConfig;
         let dirs = vec!["/dev/null"];
         let patterns = vec!["."];
         // expect some
         let size = Some("1");
-        let cfg = Config {
+        let cfg = FindConfig {
             dirs,
             patterns,
             output: None,
@@ -95,30 +95,30 @@ mod tests {
 
         // number should be positive
         let size = Some("-1");
-        let cfg2 = Config { size, ..cfg };
+        let cfg2 = FindConfig { size, ..cfg };
         let res2 = cfg2.parse_size();
         assert!(res2.is_none());
 
         // number should not be float
         let size = Some("1.1");
-        let cfg3 = Config { size, ..cfg2 };
+        let cfg3 = FindConfig { size, ..cfg2 };
         let res3 = cfg3.parse_size();
         assert!(res3.is_none());
 
         // number should be integer
         let size = Some("a");
-        let cfg4 = Config { size, ..cfg3 };
+        let cfg4 = FindConfig { size, ..cfg3 };
         let res4 = cfg4.parse_size();
         assert!(res4.is_none());
     }
 
     #[test]
     fn test_parse_patterns() {
-        use lib::Config;
+        use lib::FindConfig;
         let dirs = vec![".", ".."];
         let patterns = vec!["."];
         // all valid regex
-        let cfg = Config {
+        let cfg = FindConfig {
             dirs,
             patterns,
             output: None,
@@ -130,14 +130,14 @@ mod tests {
 
         // some invalid regex
         let patterns = vec![".", ")"];
-        let cfg2 = Config { patterns, ..cfg };
+        let cfg2 = FindConfig { patterns, ..cfg };
         let res2 = cfg2.parse_patterns();
         assert!(res2.is_ok());
         assert_eq!(res2.unwrap().len(), 1);
 
         // no valid regex
         let patterns = vec![")"];
-        let cfg3 = Config { patterns, ..cfg2 };
+        let cfg3 = FindConfig { patterns, ..cfg2 };
         let res3 = cfg3.parse_patterns();
         assert!(res3.is_err());
     }
