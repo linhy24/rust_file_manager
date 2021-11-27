@@ -92,8 +92,12 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
 
         // print or write
         if let Some(sv) = display(&matched_files, &mut output) {
-            for s in sv {
-                println!("{}", s);
+            if let Some(exec) = config.exec {
+                unimplemented!()
+            } else {
+                for s in sv {
+                    println!("{}", s);
+                }
             }
         };
         matched_files.clear();
@@ -108,6 +112,9 @@ pub struct FindConfig<'a> {
     pub patterns: Vec<&'a str>,
     pub output: Option<&'a str>,
     pub size: Option<&'a str>,
+    pub exec: Option<&'a str>,
+    pub replace: Option<&'a str>,
+    pub all: bool,
 }
 
 impl<'a> FindConfig<'a> {
@@ -117,12 +124,18 @@ impl<'a> FindConfig<'a> {
         let dirs: Vec<&'a str> = args.values_of("dirs").unwrap().collect();
         let output: Option<&'a str> = args.value_of("output");
         let size: Option<&'a str> = args.value_of("size");
+        let exec: Option<&'a str> = args.value_of("exec");
+        let replace: Option<&'a str> = args.value_of("replace");
+        let all: bool = args.is_present("all");
 
         FindConfig {
             patterns,
             dirs,
             output,
             size,
+            exec,
+            replace,
+            all,
         }
     }
 
@@ -186,6 +199,13 @@ impl<'a> FindConfig<'a> {
         }
         None
     }
+    pub fn parse_exec(&self) {
+        // should return a vector of args to pass
+    }
+    pub fn parse_replace(&self) {
+        // should check that the string is valid
+    }
+
 }
 
 pub fn get_matched_files(files: &mut Vec<MyFile>, dir: &Path, pats: &[Regex], size: Option<u64>) {
@@ -209,6 +229,13 @@ pub fn get_matched_files(files: &mut Vec<MyFile>, dir: &Path, pats: &[Regex], si
             }
         }
     }
+}
+
+pub fn run_matched_files(files: Vec<MyFile>) {
+    // parallelize this!
+    // it should look at the command passed as the -x flag, replace {} with each found file, and
+    // and then run the command
+    unimplemented!()
 }
 
 // represents found files

@@ -31,6 +31,26 @@ fn main() {
                         .takes_value(true)
                         .required(false),
                 )
+                .arg(
+                    Arg::from("-x, --exec=<cmd> 'The command to run'")
+                    .takes_value(true)
+                    .required(false)
+                    .requires("replace")
+                    .multiple_values(true)
+                )
+                .arg(
+                    Arg::from("-r, --replace=<replace_str> 'Replace occurences of \'replace str\' with names of found files.")
+                    .takes_value(true)
+                    .required(false)
+                    .requires("exec")
+                )
+                .arg(
+                    Arg::from("-a, --all 'Whether to use all arguments'")
+                    .takes_value(false)
+                    .required(false)
+                    .requires_all(&["replace", "exec"])
+                )
+                // could thread here! just spawn 1 command per found item...
         )
         .subcommand(
             App::new("add")
