@@ -22,6 +22,7 @@ We plan to adopt the idea of threading as our stretch goal. The idea is that som
 
 ## Example usage
 - find: target/debug/rust find -p '.*\.rs' -d ./src
+- add: target/debug/rust add -f 'test.txt' -d ./src ./tests
 
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
