@@ -20,6 +20,9 @@ In the end, users should be able to call a “super” command that unifies the 
 
 We plan to adopt the idea of threading as our stretch goal. The idea is that some commands may have multiple inputs so we can use threads to process each input. Users use a flag -thread to indicate that they want to run the command using threads.
 
+## Example usage
+- find: target/debug/rust find -p '.*\.rs' -d ./src
+
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
 Get all 6 commands/flags to work
