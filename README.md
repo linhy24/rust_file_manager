@@ -1,7 +1,7 @@
 # Rust_file_manager
 
 ## Team members
-#### Yonas Mekonnen<br/>Hongyang Lin<br/>Spencer Chan
+<strong>Yonas Mekonnen</strong><br/><strong>Hongyang Lin</strong><br/><strong>Spencer Chan</strong>
 
 ## Introduction and background
 Our project is to make a CLI that will perform basic linux file management. The CLI would have 6 commands (and additional flags) to emulate basic linux commands.
@@ -21,8 +21,8 @@ In the end, users should be able to call a “super” command that unifies the 
 We plan to adopt the idea of threading as our stretch goal. The idea is that some commands may have multiple inputs so we can use threads to process each input. Users use a flag -thread to indicate that they want to run the command using threads.
 
 ## Example usage
-- find: target/debug/rust find -p '.*\.rs' -d ./src
-- add: target/debug/rust add -f 'test.txt' -d ./src ./tests
+- <strong>find</strong>: target/debug/rust find -p '.*\.rs' -d ./src
+- <strong>add</strong>: target/debug/rust add -f 'test.txt' -d ./src ./tests
 
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
