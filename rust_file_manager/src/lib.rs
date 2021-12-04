@@ -72,7 +72,7 @@ impl<'a> AddConfig<'a> {
 
 /**************************** rust_add ends **************************** */
 
-/**************************** rust_remove ends **************************** */
+/**************************** rust_remove starts **************************** */
 pub struct RemoveConfig<'a> {
     pub dirs: Vec<&'a str>,
     pub files: Vec<&'a str>,
