@@ -6,6 +6,8 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
+use std::process::Command;
+use shlex;
 
 /**************************** rust_add starts **************************** */
 pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
@@ -90,10 +92,33 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
     for dir in v_dirs.iter() {
         get_matched_files(&mut matched_files, dir, &v_pats[..], size);
 
-        // print or write
         if let Some(sv) = display(&matched_files, &mut output) {
+            // string implements clone
+            let paths = matched_files.iter().map(|x| x.path.clone()).collect::<Vec<_>>();
             if let Some(exec) = config.exec {
-                unimplemented!()
+                // split strings in accordance with shell expansion
+                let cmd = shlex::split(exec).unwrap();
+                // find the index of the replace string
+                // the replace string technically does not have to be there
+                let pos = cmd.iter().position(|x| x == config.replace.unwrap()).unwrap();
+                if config.all {
+                    let cmd = [&cmd[..pos], &paths, &cmd[(pos+1)..]].concat();
+                    // run command with all files as args
+                    Command::new(&cmd[0])
+                        .args(&cmd[1..])
+                        .spawn()
+                        .expect("failed to run process");
+                } else {
+                    // run 1 command per each file
+                    // TODO: specify threads
+                    for path in paths {
+                        let cmd = [&cmd[..pos], &[path], &cmd[(pos+1)..]].concat();
+                        Command::new(&cmd[0])
+                            .args(&cmd[1..])
+                            .spawn()
+                            .expect("failed to run process");
+                    }
+                }
             } else {
                 for s in sv {
                     println!("{}", s);
@@ -102,7 +127,6 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
         };
         matched_files.clear();
     }
-
     Ok(())
 }
 
@@ -229,13 +253,6 @@ pub fn get_matched_files(files: &mut Vec<MyFile>, dir: &Path, pats: &[Regex], si
             }
         }
     }
-}
-
-pub fn run_matched_files(files: Vec<MyFile>) {
-    // parallelize this!
-    // it should look at the command passed as the -x flag, replace {} with each found file, and
-    // and then run the command
-    unimplemented!()
 }
 
 // represents found files
