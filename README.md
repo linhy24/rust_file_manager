@@ -13,7 +13,7 @@ These commands would map to the linux commands listed below.
 - rust-grep -> grep
 - rust-xargs -> xargs
 - rust-diff -> diff
-- rust-sub -> (tr++) modified <strong>tr</strong> for word substitution
+- rust-tr -> (tr++) modified <strong>tr</strong> for word substitution
 - -thread -> make use of threading
 
 In the end, users should be able to call a “super” command that unifies the functionalities of all three commands above. For instance, a command can contain the functionalities of -a(add), -r(remove), and -f(find). We expect to make use of rust crates like clap to implement our project.
