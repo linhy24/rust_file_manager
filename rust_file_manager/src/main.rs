@@ -112,7 +112,7 @@ fn main() {
             //Error handling here!
             panic!("{}", err)
         }
-    } else if let Some(sub_m) = matches.subcommand_matches("sub") {
+    } else if let Some(sub_m) = matches.subcommand_matches("tr") {
         let args = TrConfig::from_args(&sub_m);
 
         if let Err(err) = run_tr(&args) {

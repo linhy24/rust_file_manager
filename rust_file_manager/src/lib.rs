@@ -333,14 +333,18 @@ pub struct TrConfig<'a> {
 }
 
 pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
-    let content: Option<String> = config.parse_file_path();
+    let mut content: Option<String> = config.parse_file_path();
     let delete: Option<&str> = config.delete;
+    let file: Option<File> = config.parse_file();
 
     // call aux functions for implementing delete & replace
-    delete_words(content, delete);
-    // if let Some(c) = content {
-    //     println!("{}", c);
-    // }
+    delete_words(&mut content, delete);
+    
+    if let Some(c) = content {
+        if !file.is_none() {
+            writeln!(file.unwrap(), "{}", c.clone()).expect("Unable to write to file");
+        }
+    }
     
     Ok(())
 }
@@ -358,6 +362,18 @@ impl<'a> TrConfig<'a> {
             delete,
             replace,
         }
+    }
+
+    pub fn parse_file(&self) -> Option<File> {
+        let file = self.file;
+        if let Some(f) = file {
+            if let Ok(file) = File::open(f) {
+                return Some(file);
+            } else {
+                eprintln!("Couldn't open {} for writing, not writing to file", f);
+            }
+        }
+        None
     }
 
     pub fn parse_path(&self) -> Option<PathBuf> {
@@ -394,15 +410,27 @@ impl<'a> TrConfig<'a> {
 
 }
 
-pub fn delete_words(content: Option<String>, delete: Option<&str>) -> Option<String> {
+pub fn delete_words(content: &mut Option<String>, delete: Option<&str>) -> Option<String> {
     let mut res = String::from("");
     if let Some(c) = content {
         if let Some(d) = delete {
             res = c.replace(d, "");
         }
     }
+    
     Some(res)
 }
+
+// pub fn replace_words(content: Option<String>, replace: Option<&str>) -> Option<String> {
+//     let mut res = String::from("");
+//     if let Some(c) = content {
+//         if let Some(r) = replace {
+//             res = c.replace(d, "");
+//         }
+//     }
+//     Some(res)
+// }
+
 
 pub fn display_tr(content: Option<String>) -> Option<String> {
 
