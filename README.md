@@ -21,9 +21,13 @@ In the end, users should be able to call a “super” command that unifies the 
 We plan to adopt the idea of threading as our stretch goal. The idea is that some commands may have multiple inputs so we can use threads to process each input. Users use a flag -thread to indicate that they want to run the command using threads.
 
 ## Example usage
-- <strong>find</strong>: target/debug/rust find -p '.*\.rs' -d ./src
-- <strong>add</strong>: target/debug/rust add -f 'test.txt' -d ./src ./tests
-- <strong>remove</strong>: target/debug/rust remove -f 'test.txt' -d ./src ./tests
+- <strong>find</strong>: `target/debug/rust find -p '.*\.rs' -d ./src`
+    - use find with the --exec flag to run a command once per found file, optionally with the --all flag to run a command with all files
+    - `target/debug/rust find -p '.*\.rs' -d ./src --exec 'echo {}' --replace {}`
+    - `target/debug/rust find -p '.*\.rs' -d ./src --exec 'sort {}' --replace {} --all`
+
+- <strong>add</strong>: `target/debug/rust add -f 'test.txt' -d ./src ./tests`
+- <strong>remove</strong>: `target/debug/rust remove -f 'test.txt' -d ./src ./tests`
 
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
