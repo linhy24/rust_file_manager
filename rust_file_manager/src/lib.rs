@@ -20,7 +20,7 @@ pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
             match std::fs::write(file_path, "") {
                 Ok(_) => {}
                 Err(err) => {
-                    eprintln!("Invalid writeln error: {}", err);
+                    eprintln!("Failed to add file {}: {}", f, err);
                 }
             }
         }
@@ -73,6 +73,71 @@ impl<'a> AddConfig<'a> {
 }
 
 /**************************** rust_add ends **************************** */
+
+/**************************** rust_remove starts **************************** */
+pub struct RemoveConfig<'a> {
+    pub dirs: Vec<&'a str>,
+    pub files: Vec<&'a str>,
+}
+
+pub fn run_remove(config: &RemoveConfig) -> Result<(), &'static str> {
+    let v_dirs: Vec<PathBuf> = config.parse_dirs()?;
+    let v_files: Vec<&str> = config.parse_files()?;
+
+    for d in v_dirs {
+        for f in &v_files {
+            let file_path = d.join(f);
+            match std::fs::remove_file(file_path) {
+                Ok(_) => {}
+                Err(err) => {
+                    eprintln!("Failed to remove file {}: {}", f, err);
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+impl<'a> RemoveConfig<'a> {
+    pub fn from_args(args: &'a ArgMatches) -> Self {
+        let dirs: Vec<&'a str> = args.values_of("dirs").unwrap().collect();
+        let files: Vec<&'a str> = args.values_of("files").unwrap().collect();
+
+        RemoveConfig { dirs, files }
+    }
+
+    pub fn parse_dirs(&self) -> Result<Vec<PathBuf>, &'static str> {
+        let mut res: Vec<PathBuf> = Vec::new();
+        let mut parsed = false;
+        for d in &self.dirs {
+            let dir = PathBuf::from(d);
+            if dir.is_dir() {
+                parsed = true;
+                res.push(dir);
+            } else {
+                eprintln!("{} is an invalid directory or is inaccessible", d);
+            }
+        }
+        if parsed {
+            Ok(res)
+        } else {
+            Err("No valid directories given")
+        }
+    }
+
+    pub fn parse_files(&self) -> Result<Vec<&str>, &'static str> {
+        let mut res: Vec<&str> = Vec::new();
+
+        for f in &self.files {
+            res.push(*f);
+        }
+
+        Ok(res)
+    }
+}
+
+/**************************** rust_remove ends **************************** */
 
 /**************************** rust_find starts **************************** */
 pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
