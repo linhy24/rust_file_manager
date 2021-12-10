@@ -24,7 +24,7 @@ We plan to adopt the idea of threading as our stretch goal. The idea is that som
 - <strong>find</strong>: target/debug/rust find -p '.*\.rs' -d ./src
 - <strong>add</strong>: target/debug/rust add -f 'test.txt' -d ./src ./tests
 - <strong>remove</strong>: target/debug/rust remove -f 'test.txt' -d ./src ./tests
-- <strong>tr</strong>: target/debug/rust tr -f 'test.txt' -p ./src -d "Hey"
+- <strong>tr</strong>: target/debug/rust tr -f 'test.txt' -p ./src -d "Hey" (Please add your own testing content into 'test.txt')
 
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
