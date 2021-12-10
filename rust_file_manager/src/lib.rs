@@ -335,14 +335,24 @@ pub struct TrConfig<'a> {
 pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
     let mut content: Option<String> = config.parse_file_path();
     let delete: Option<&str> = config.delete;
-    let file: Option<File> = config.parse_file();
+    let _file: Option<File> = config.parse_file();
+    let path: Option<PathBuf> = config.parse_path();
 
     // call aux functions for implementing delete & replace
-    delete_words(&mut content, delete);
+    content = delete_words(&mut content, delete);
     
     if let Some(c) = content {
-        if !file.is_none() {
-            writeln!(file.unwrap(), "{}", c.clone()).expect("Unable to write to file");
+        if let Some(p) = path {
+            // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
+            if let Some(f) = config.file {
+                let file_path = p.join(f);
+                match fs::write(file_path, c) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        eprintln!("Failed to write to file, {}", err);
+                    }
+                }
+            }
         }
     }
     
@@ -365,15 +375,21 @@ impl<'a> TrConfig<'a> {
     }
 
     pub fn parse_file(&self) -> Option<File> {
-        let file = self.file;
-        if let Some(f) = file {
-            if let Ok(file) = File::open(f) {
-                return Some(file);
-            } else {
-                eprintln!("Couldn't open {} for writing, not writing to file", f);
+        let mut res: Option<File> = None;
+
+        if let Some(p) = self.parse_path() {
+            if let Some(f) = self.file {
+                let file_path = p.join(f);
+                match File::open(file_path) {
+                    Ok(r) => {res = Some(r);}
+                    Err(err) => {
+                        eprintln!("Failed to open file {}: {}", f, err);
+                    }
+                }
             }
         }
-        None
+        
+        res
     }
 
     pub fn parse_path(&self) -> Option<PathBuf> {
