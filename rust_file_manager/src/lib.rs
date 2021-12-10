@@ -323,3 +323,90 @@ pub fn display(files: &[MyFile], output: &mut Option<File>) -> Option<Vec<String
 }
 
 /**************************** rust_find ends **************************** */
+
+/**************************** rust_sub starts **************************** */
+pub struct TrConfig<'a> {
+    pub path: Option<& 'a str>,
+    pub file: Option<&'a str>,
+    pub delete: Option<&'a str>,
+    pub replace: Option<&'a str>,
+}
+
+pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
+    let content: Option<String> = config.parse_file_path();
+    let delete: Option<&str> = config.delete;
+
+    // call aux functions for implementing delete & replace
+    delete_words(content, delete);
+    // if let Some(c) = content {
+    //     println!("{}", c);
+    // }
+    
+    Ok(())
+}
+
+impl<'a> TrConfig<'a> {
+    pub fn from_args(args: &'a ArgMatches) -> Self {
+        let path: Option<&'a str> = args.value_of("path");
+        let file: Option<&'a str> = args.value_of("file");
+        let delete: Option<&'a str> = args.value_of("delete");
+        let replace: Option<&'a str> = args.value_of("replace");
+
+        TrConfig {
+            path,
+            file,
+            delete,
+            replace,
+        }
+    }
+
+    pub fn parse_path(&self) -> Option<PathBuf> {
+        let mut res = None;
+        if let Some(p) = self.path {
+            let path = PathBuf::from(p);
+            if path.is_dir() {
+                res = Some(path);
+            } else {
+                eprintln!("{} is an invalid directory or is inaccessible", p);
+            }
+        }
+        res
+    }
+
+    // need to address borrowing issues in this function
+    pub fn parse_file_path(&self) -> Option<String> {
+        let mut res: Option<String> = None;
+
+        if let Some(p) = self.parse_path() {
+            if let Some(f) = self.file {
+                let file_path = p.join(f);
+                match fs::read_to_string(file_path) {
+                    Ok(r) => {res = Some(r);}
+                    Err(err) => {
+                        eprintln!("Failed to read file {}: {}", f, err);
+                    }
+                }
+            }
+        }
+        
+        res
+    }
+
+}
+
+pub fn delete_words(content: Option<String>, delete: Option<&str>) -> Option<String> {
+    let mut res = String::from("");
+    if let Some(c) = content {
+        if let Some(d) = delete {
+            res = c.replace(d, "");
+        }
+    }
+    Some(res)
+}
+
+pub fn display_tr(content: Option<String>) -> Option<String> {
+
+    content
+}
+
+/**************************** rust_tr ends **************************** */

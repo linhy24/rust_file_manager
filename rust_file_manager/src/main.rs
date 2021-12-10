@@ -1,5 +1,5 @@
 use clap::{App, Arg}; // tell Rust you will use these two structs in clap
-use lib::{run_add, run_find, run_remove, AddConfig, FindConfig, RemoveConfig}; // tell Rust you will use these two things from our "lib" module
+use lib::{run_add, run_find, run_remove, run_tr, AddConfig, FindConfig, RemoveConfig, TrConfig}; // tell Rust you will use these two things from our "lib" module
 
 fn main() {
     // Define command-line interface
@@ -35,7 +35,7 @@ fn main() {
         .subcommand(
             App::new("add")
                 .arg(
-                    Arg::from("-f, --files=<files> 'File name to be added")
+                    Arg::from("-f, --files=<files> 'Name of the file that's to be added")
                         .takes_value(true)
                         .required(true)
                         .multiple_values(true),
@@ -50,7 +50,7 @@ fn main() {
         .subcommand(
             App::new("remove")
                 .arg(
-                    Arg::from("-f, --files=<files> 'File name to be removed")
+                    Arg::from("-f, --files=<files> 'Name of the file that's to be removed'")
                         .takes_value(true)
                         .required(true)
                         .multiple_values(true),
@@ -59,6 +59,32 @@ fn main() {
                     Arg::from("-d, --dirs=<dirs> 'Set of directories'")
                         .takes_value(true)
                         .required(true)
+                        .multiple_values(true),
+                )
+        )
+        .subcommand(
+            // tr++
+            App::new("tr")
+                .arg(
+                    Arg::from("-p, --path=<path> 'Path of file to be modified'")
+                        .takes_value(true)
+                        .required(true)
+                )
+                .arg(
+                    Arg::from("-f, --file=<file> 'Name of the file that's to be modified'")
+                        .takes_value(true)
+                        .required(true)
+                )
+                .arg(
+                    Arg::from("-d, --delete=<delete> 'String to be deleted in the specified file")
+                        .takes_value(true)
+                        .required(false)
+                        .multiple_values(true),
+                )
+                .arg(
+                    Arg::from("-r, --replace=<replace> 'Replace repeated string listed in the file with single occurrence")
+                        .takes_value(true)
+                        .required(false)
                         .multiple_values(true),
                 )
         )
@@ -83,6 +109,13 @@ fn main() {
         let args = RemoveConfig::from_args(&sub_m);
 
         if let Err(err) = run_remove(&args) {
+            //Error handling here!
+            panic!("{}", err)
+        }
+    } else if let Some(sub_m) = matches.subcommand_matches("sub") {
+        let args = TrConfig::from_args(&sub_m);
+
+        if let Err(err) = run_tr(&args) {
             //Error handling here!
             panic!("{}", err)
         }
