@@ -6,6 +6,7 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
+use std::io::Read;
 
 /**************************** rust_add starts **************************** */
 pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
@@ -322,135 +323,80 @@ pub fn display(files: &[MyFile], output: &mut Option<File>) -> Option<Vec<String
     }
 }
 
-/**************************** rust_find ends **************************** */
+/**************************** rust_find ends *****************************/
 
-/**************************** rust_sub starts **************************** */
-pub struct TrConfig<'a> {
-    pub path: Option<& 'a str>,
-    pub file: Option<&'a str>,
-    pub delete: Option<&'a str>,
-    pub replace: Option<&'a str>,
+/**************************** rust_grep start *****************************/
+
+pub struct GrepConfig<'a> {
+    pub patterns: Vec<&'a str>,
+    pub filenames: Vec<& 'a str>
 }
+pub fn run_grep(config: &GrepConfig) -> Result<(), &'static str> {
+    let v_patterns: Vec<Regex> = config.parse_patterns()?;
+    let v_files: Vec<&str> = config.parse_files()?;
 
-pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
-    let mut content: Option<String> = config.parse_file_path();
-    let delete: Option<&str> = config.delete;
-    let _file: Option<File> = config.parse_file();
-    let path: Option<PathBuf> = config.parse_path();
-
-    // call aux functions for implementing delete & replace
-    content = delete_words(&mut content, delete);
-    
-    if let Some(c) = content {
-        if let Some(p) = path {
-            // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
-            if let Some(f) = config.file {
-                let file_path = p.join(f);
-                match fs::write(file_path, c) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        eprintln!("Failed to write to file, {}", err);
-                    }
+    for pattern in v_patterns {
+        println!("Searching for lines matching {}", pattern);
+        for filename in &v_files {
+            let mut f = File::open(filename).unwrap();
+            let mut contents = String::new();
+          
+            f.read_to_string(&mut contents);
+            let mut line_number = 1;
+            println!("Looking inside {}",filename);
+            for line in contents.lines() {
+                // if line.contains(pattern) {
+                if pattern.is_match(line) {
+                    println!("{}: {}", line_number, line);
                 }
+                line_number += 1;
             }
+            println!("Done looking inside {}", filename);
         }
+        println!("Done searching for lines matching {}", pattern);
     }
     
     Ok(())
 }
 
-impl<'a> TrConfig<'a> {
+impl<'a> GrepConfig<'a> {
+
     pub fn from_args(args: &'a ArgMatches) -> Self {
-        let path: Option<&'a str> = args.value_of("path");
-        let file: Option<&'a str> = args.value_of("file");
-        let delete: Option<&'a str> = args.value_of("delete");
-        let replace: Option<&'a str> = args.value_of("replace");
+        let patterns: Vec<&'a str> = args.values_of("patterns").unwrap().collect();
+        let filenames: Vec<&'a str> = args.values_of("filenames").unwrap().collect();
 
-        TrConfig {
-            path,
-            file,
-            delete,
-            replace,
+        GrepConfig {
+            patterns,
+            filenames,
         }
     }
 
-    pub fn parse_file(&self) -> Option<File> {
-        let mut res: Option<File> = None;
-
-        if let Some(p) = self.parse_path() {
-            if let Some(f) = self.file {
-                let file_path = p.join(f);
-                match File::open(file_path) {
-                    Ok(r) => {res = Some(r);}
-                    Err(err) => {
-                        eprintln!("Failed to open file {}: {}", f, err);
-                    }
-                }
-            }
-        }
-        
-        res
-    }
-
-    pub fn parse_path(&self) -> Option<PathBuf> {
-        let mut res = None;
-        if let Some(p) = self.path {
-            let path = PathBuf::from(p);
-            if path.is_dir() {
-                res = Some(path);
+    pub fn parse_patterns(&self) -> Result<Vec<Regex>, &'static str> {
+        let mut res: Vec<Regex> = Vec::new();
+        let mut parsed = false;
+        for p in &self.patterns {
+            if let Ok(rgx) = Regex::new(p) {
+                res.push(rgx);
+                parsed = true;
             } else {
-                eprintln!("{} is an invalid directory or is inaccessible", p);
+                eprintln!("{} is not a valid regular expression, ignoring", p);
             }
         }
-        res
-    }
-
-    // need to address borrowing issues in this function
-    pub fn parse_file_path(&self) -> Option<String> {
-        let mut res: Option<String> = None;
-
-        if let Some(p) = self.parse_path() {
-            if let Some(f) = self.file {
-                let file_path = p.join(f);
-                match fs::read_to_string(file_path) {
-                    Ok(r) => {res = Some(r);}
-                    Err(err) => {
-                        eprintln!("Failed to read file {}: {}", f, err);
-                    }
-                }
-            }
-        }
-        
-        res
-    }
-
-}
-
-pub fn delete_words(content: &mut Option<String>, delete: Option<&str>) -> Option<String> {
-    let mut res = String::from("");
-    if let Some(c) = content {
-        if let Some(d) = delete {
-            res = c.replace(d, "");
+        if parsed {
+            Ok(res)
+        } else {
+            Err("No valid regex given")
         }
     }
-    
-    Some(res)
+
+    pub fn parse_files(&self) -> Result<Vec<&str>, &'static str> {
+        let mut res: Vec<&str> = Vec::new();
+
+        for f in &self.filenames {
+            res.push(*f);
+        }
+
+        Ok(res)
+    }
 }
-
-// pub fn replace_words(content: Option<String>, replace: Option<&str>) -> Option<String> {
-//     let mut res = String::from("");
-//     if let Some(c) = content {
-//         if let Some(r) = replace {
-//             res = c.replace(d, "");
-//         }
-//     }
-//     Some(res)
-// }
-
-
-pub fn display_tr(content: Option<String>) -> Option<String> {
-
-    content
-}
-
-/**************************** rust_tr ends **************************** */
+/**************************** rust_grep ends *****************************/
