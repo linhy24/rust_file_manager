@@ -324,12 +324,12 @@ pub fn display(files: &[MyFile], output: &mut Option<File>) -> Option<Vec<String
 
 /**************************** rust_find ends **************************** */
 
-/**************************** rust_sub starts **************************** */
+/**************************** rust_tr starts **************************** */
 pub struct TrConfig<'a> {
-    pub path: Option<& 'a str>,
+    pub path: Option<&'a str>,
     pub file: Option<&'a str>,
     pub delete: Option<&'a str>,
-    pub replace: Option<&'a str>,
+    pub replace: Vec<&'a str>,
 }
 
 pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
@@ -337,17 +337,28 @@ pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
     let delete: Option<&str> = config.delete;
     let _file: Option<File> = config.parse_file();
     let path: Option<PathBuf> = config.parse_path();
+    let v_replace: Option<Vec<&str>> = config.parse_replace();
+
+    println!("Usage prompt: 
+for replacement, use it as -r \"target\" \"replacement\".
+Remember, if you replace after delete, you might accidenttaly delete the content you want to replace.\n");
 
     // call aux functions for implementing delete & replace
     content = delete_words(&mut content, delete);
-    
+
+    if let Some(r) = v_replace {
+        content = replace_words(&mut content, r);
+    }
+
     if let Some(c) = content {
         if let Some(p) = path {
             // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
             if let Some(f) = config.file {
                 let file_path = p.join(f);
                 match fs::write(file_path, c) {
-                    Ok(_) => {}
+                    Ok(_) => {
+                        println!("Your operation is successful this time!")
+                    }
                     Err(err) => {
                         eprintln!("Failed to write to file, {}", err);
                     }
@@ -355,7 +366,7 @@ pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -364,7 +375,10 @@ impl<'a> TrConfig<'a> {
         let path: Option<&'a str> = args.value_of("path");
         let file: Option<&'a str> = args.value_of("file");
         let delete: Option<&'a str> = args.value_of("delete");
-        let replace: Option<&'a str> = args.value_of("replace");
+        let mut replace: Vec<&'a str> = Vec::new();
+        if let Some(val) = args.values_of("replace") {
+            replace = val.collect();
+        }
 
         TrConfig {
             path,
@@ -381,15 +395,30 @@ impl<'a> TrConfig<'a> {
             if let Some(f) = self.file {
                 let file_path = p.join(f);
                 match File::open(file_path) {
-                    Ok(r) => {res = Some(r);}
+                    Ok(r) => {
+                        res = Some(r);
+                    }
                     Err(err) => {
                         eprintln!("Failed to open file {}: {}", f, err);
                     }
                 }
             }
         }
-        
+
         res
+    }
+
+    pub fn parse_replace(&self) -> Option<Vec<&str>> {
+        let mut res = Vec::new();
+        let mut i = 0;
+        if self.replace.len() == 2 {
+            while i < 2 {
+                res.push(self.replace[i]);
+                i += 1;
+            }
+            return Some(res);
+        }
+        None
     }
 
     pub fn parse_path(&self) -> Option<PathBuf> {
@@ -413,17 +442,18 @@ impl<'a> TrConfig<'a> {
             if let Some(f) = self.file {
                 let file_path = p.join(f);
                 match fs::read_to_string(file_path) {
-                    Ok(r) => {res = Some(r);}
+                    Ok(r) => {
+                        res = Some(r);
+                    }
                     Err(err) => {
                         eprintln!("Failed to read file {}: {}", f, err);
                     }
                 }
             }
         }
-        
+
         res
     }
-
 }
 
 pub fn delete_words(content: &mut Option<String>, delete: Option<&str>) -> Option<String> {
@@ -433,24 +463,19 @@ pub fn delete_words(content: &mut Option<String>, delete: Option<&str>) -> Optio
             res = c.replace(d, "");
         }
     }
-    
+
     Some(res)
 }
 
-// pub fn replace_words(content: Option<String>, replace: Option<&str>) -> Option<String> {
-//     let mut res = String::from("");
-//     if let Some(c) = content {
-//         if let Some(r) = replace {
-//             res = c.replace(d, "");
-//         }
-//     }
-//     Some(res)
-// }
-
-
-pub fn display_tr(content: Option<String>) -> Option<String> {
-
-    content
+pub fn replace_words(content: &mut Option<String>, replace: Vec<&str>) -> Option<String> {
+    let mut res = String::from("");
+    if let Some(c) = content {
+        // println!("{}", c);
+        // println!("{} {}", replace[0], replace[1]);
+        res = c.replace(replace[0], replace[1]);
+        // println!("{}", res);
+    }
+    Some(res)
 }
 
 /**************************** rust_tr ends **************************** */
