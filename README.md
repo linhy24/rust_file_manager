@@ -9,9 +9,8 @@ Our project is to make a CLI that will perform basic linux file management. The 
 These commands would map to the linux commands listed below.
 - rust-add -> touch and mkdir
 - rust-remove  -> rm
-- rust-find -> rust_find project
+- rust-find -> rust_find, extended with the --exec flag to mimic find --exec
 - rust-grep -> grep
-- rust-xargs -> xargs
 - rust-diff -> diff
 - rust-tr -> (tr++) modified <strong>tr</strong> for word substitution
 - -thread -> make use of threading
