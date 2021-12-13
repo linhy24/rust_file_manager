@@ -323,3 +323,161 @@ pub fn display(files: &[MyFile], output: &mut Option<File>) -> Option<Vec<String
 }
 
 /**************************** rust_find ends **************************** */
+
+/**************************** rust_tr starts **************************** */
+pub struct TrConfig<'a> {
+    pub path: Option<&'a str>,
+    pub file: Option<&'a str>,
+    pub delete: Option<&'a str>,
+    pub replace: Vec<&'a str>,
+    pub simulate: bool,
+}
+
+pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
+    let mut content: Option<String> = config.parse_file_path();
+    let delete: Option<&str> = config.delete;
+    let _file: Option<File> = config.parse_file();
+    let path: Option<PathBuf> = config.parse_path();
+    let v_replace: Option<Vec<&str>> = config.parse_replace();
+
+    // call aux functions for implementing delete & replace
+    if delete.is_some() {
+        content = delete_words(&mut content, delete);
+    }
+
+    if let Some(r) = v_replace {
+        content = replace_words(&mut content, r);
+    }
+
+    if let Some(c) = content {
+        if config.simulate {
+            println!("{}", c);
+        } else {
+            if let Some(p) = path {
+                // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
+                if let Some(f) = config.file {
+                    let file_path = p.join(f);
+                    match fs::write(file_path, c) {
+                        Ok(_) => {
+                            println!("Your operation is successful this time!")
+                        }
+                        Err(err) => {
+                            eprintln!("Failed to write to file, {}", err);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+impl<'a> TrConfig<'a> {
+    pub fn from_args(args: &'a ArgMatches) -> Self {
+        let path: Option<&'a str> = args.value_of("path");
+        let file: Option<&'a str> = args.value_of("file");
+        let delete: Option<&'a str> = args.value_of("delete");
+        let simulate: bool = args.is_present("simulate");
+        let mut replace: Vec<&'a str> = Vec::new();
+        if let Some(val) = args.values_of("replace") {
+            replace = val.collect();
+        }
+
+        TrConfig {
+            path,
+            file,
+            delete,
+            replace,
+            simulate,
+        }
+    }
+
+    pub fn parse_file(&self) -> Option<File> {
+        let mut res: Option<File> = None;
+
+        if let Some(p) = self.parse_path() {
+            if let Some(f) = self.file {
+                let file_path = p.join(f);
+                match File::open(file_path) {
+                    Ok(r) => {
+                        res = Some(r);
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to open file {}: {}", f, err);
+                    }
+                }
+            }
+        }
+
+        res
+    }
+
+    pub fn parse_replace(&self) -> Option<Vec<&str>> {
+        let mut res = Vec::new();
+        let mut i = 0;
+        if self.replace.len() == 2 {
+            while i < 2 {
+                res.push(self.replace[i]);
+                i += 1;
+            }
+            return Some(res);
+        }
+        None
+    }
+
+    pub fn parse_path(&self) -> Option<PathBuf> {
+        let mut res = None;
+        if let Some(p) = self.path {
+            let path = PathBuf::from(p);
+            if path.is_dir() {
+                res = Some(path);
+            } else {
+                eprintln!("{} is an invalid directory or is inaccessible", p);
+            }
+        }
+        res
+    }
+
+    // need to address borrowing issues in this function
+    pub fn parse_file_path(&self) -> Option<String> {
+        let mut res: Option<String> = None;
+
+        if let Some(p) = self.parse_path() {
+            if let Some(f) = self.file {
+                let file_path = p.join(f);
+                match fs::read_to_string(file_path) {
+                    Ok(r) => {
+                        res = Some(r);
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to read file {}: {}", f, err);
+                    }
+                }
+            }
+        }
+
+        res
+    }
+}
+
+pub fn delete_words(content: &mut Option<String>, delete: Option<&str>) -> Option<String> {
+    let mut res = String::from("");
+    if let Some(c) = content {
+        if let Some(d) = delete {
+            res = c.replace(d, "");
+        }
+    }
+
+    Some(res)
+}
+
+pub fn replace_words(content: &mut Option<String>, replace: Vec<&str>) -> Option<String> {
+    let mut res = String::from("");
+    if let Some(c) = content {
+        res = c.replace(replace[0], replace[1]);
+    }
+    Some(res)
+}
+
+/**************************** rust_tr ends **************************** */
