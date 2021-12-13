@@ -344,7 +344,7 @@ for replacement, use it as -r \"target\" \"replacement\".
 Remember, if you replace after delete, you might accidenttaly delete the content you want to replace.\n");
 
     // call aux functions for implementing delete & replace
-    if !delete.is_none(){   
+    if delete.is_some() {
         content = delete_words(&mut content, delete);
     }
 
@@ -472,10 +472,7 @@ pub fn delete_words(content: &mut Option<String>, delete: Option<&str>) -> Optio
 pub fn replace_words(content: &mut Option<String>, replace: Vec<&str>) -> Option<String> {
     let mut res = String::from("");
     if let Some(c) = content {
-        // println!("{}", c);
-        // println!("{} {}", replace[0], replace[1]);
         res = c.replace(replace[0], replace[1]);
-        // println!("{}", res);
     }
     Some(res)
 }
