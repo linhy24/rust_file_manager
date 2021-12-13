@@ -5,8 +5,8 @@ fn main() {
     // Define command-line interface
     let matches = App::new("rust")
         .version("0.1.0")
-        .author("Your Name <you.email@umd.edu>") 
-        .about("Find files that match a regex pattern")
+        .author("Yonas Mekonnen, Hongyang Lin, Spencer Chan")
+        .about("Emulate basic Linux commands")
         .subcommand(
             App::new("find")
                 .arg(
