@@ -330,6 +330,7 @@ pub struct TrConfig<'a> {
     pub file: Option<&'a str>,
     pub delete: Option<&'a str>,
     pub replace: Vec<&'a str>,
+    pub simulate: bool,
 }
 
 pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
@@ -338,10 +339,6 @@ pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
     let _file: Option<File> = config.parse_file();
     let path: Option<PathBuf> = config.parse_path();
     let v_replace: Option<Vec<&str>> = config.parse_replace();
-
-    println!("Usage prompt: 
-for replacement, use it as -r \"target\" \"replacement\".
-Remember, if you replace after delete, you might accidenttaly delete the content you want to replace.\n");
 
     // call aux functions for implementing delete & replace
     if delete.is_some() {
@@ -353,16 +350,20 @@ Remember, if you replace after delete, you might accidenttaly delete the content
     }
 
     if let Some(c) = content {
-        if let Some(p) = path {
-            // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
-            if let Some(f) = config.file {
-                let file_path = p.join(f);
-                match fs::write(file_path, c) {
-                    Ok(_) => {
-                        println!("Your operation is successful this time!")
-                    }
-                    Err(err) => {
-                        eprintln!("Failed to write to file, {}", err);
+        if config.simulate {
+            println!("{}", c);
+        } else {
+            if let Some(p) = path {
+                // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
+                if let Some(f) = config.file {
+                    let file_path = p.join(f);
+                    match fs::write(file_path, c) {
+                        Ok(_) => {
+                            println!("Your operation is successful this time!")
+                        }
+                        Err(err) => {
+                            eprintln!("Failed to write to file, {}", err);
+                        }
                     }
                 }
             }
@@ -377,6 +378,7 @@ impl<'a> TrConfig<'a> {
         let path: Option<&'a str> = args.value_of("path");
         let file: Option<&'a str> = args.value_of("file");
         let delete: Option<&'a str> = args.value_of("delete");
+        let simulate: bool = args.is_present("simulate");
         let mut replace: Vec<&'a str> = Vec::new();
         if let Some(val) = args.values_of("replace") {
             replace = val.collect();
@@ -387,6 +389,7 @@ impl<'a> TrConfig<'a> {
             file,
             delete,
             replace,
+            simulate,
         }
     }
 
