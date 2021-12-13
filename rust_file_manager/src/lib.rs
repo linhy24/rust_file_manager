@@ -344,7 +344,9 @@ for replacement, use it as -r \"target\" \"replacement\".
 Remember, if you replace after delete, you might accidenttaly delete the content you want to replace.\n");
 
     // call aux functions for implementing delete & replace
-    content = delete_words(&mut content, delete);
+    if !delete.is_none(){   
+        content = delete_words(&mut content, delete);
+    }
 
     if let Some(r) = v_replace {
         content = replace_words(&mut content, r);
