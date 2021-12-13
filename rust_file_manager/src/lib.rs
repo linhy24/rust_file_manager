@@ -6,6 +6,8 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
+use std::process::Command;
+use shlex;
 
 /**************************** rust_add starts **************************** */
 pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
@@ -155,15 +157,41 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
     for dir in v_dirs.iter() {
         get_matched_files(&mut matched_files, dir, &v_pats[..], size);
 
-        // print or write
         if let Some(sv) = display(&matched_files, &mut output) {
-            for s in sv {
-                println!("{}", s);
+            // string implements clone
+            let paths = matched_files.iter().map(|x| x.path.clone()).collect::<Vec<_>>();
+            if let Some(exec) = config.exec {
+                // split strings in accordance with shell expansion
+                let cmd = shlex::split(exec).unwrap();
+                // find the index of the replace string
+                // the replace string technically does not have to be there
+                let pos = cmd.iter().position(|x| x == config.replace.unwrap()).unwrap();
+                if config.all {
+                    let cmd = [&cmd[..pos], &paths, &cmd[(pos+1)..]].concat();
+                    // run command with all files as args
+                    Command::new(&cmd[0])
+                        .args(&cmd[1..])
+                        .spawn()
+                        .expect("failed to run process");
+                } else {
+                    // run 1 command per each file
+                    // TODO: specify threads
+                    for path in paths {
+                        let cmd = [&cmd[..pos], &[path], &cmd[(pos+1)..]].concat();
+                        Command::new(&cmd[0])
+                            .args(&cmd[1..])
+                            .spawn()
+                            .expect("failed to run process");
+                    }
+                }
+            } else {
+                for s in sv {
+                    println!("{}", s);
+                }
             }
         };
         matched_files.clear();
     }
-
     Ok(())
 }
 
@@ -173,6 +201,9 @@ pub struct FindConfig<'a> {
     pub patterns: Vec<&'a str>,
     pub output: Option<&'a str>,
     pub size: Option<&'a str>,
+    pub exec: Option<&'a str>,
+    pub replace: Option<&'a str>,
+    pub all: bool,
 }
 
 impl<'a> FindConfig<'a> {
@@ -182,12 +213,18 @@ impl<'a> FindConfig<'a> {
         let dirs: Vec<&'a str> = args.values_of("dirs").unwrap().collect();
         let output: Option<&'a str> = args.value_of("output");
         let size: Option<&'a str> = args.value_of("size");
+        let exec: Option<&'a str> = args.value_of("exec");
+        let replace: Option<&'a str> = args.value_of("replace");
+        let all: bool = args.is_present("all");
 
         FindConfig {
             patterns,
             dirs,
             output,
             size,
+            exec,
+            replace,
+            all,
         }
     }
 
@@ -251,6 +288,13 @@ impl<'a> FindConfig<'a> {
         }
         None
     }
+    pub fn parse_exec(&self) {
+        // should return a vector of args to pass
+    }
+    pub fn parse_replace(&self) {
+        // should check that the string is valid
+    }
+
 }
 
 pub fn get_matched_files(files: &mut Vec<MyFile>, dir: &Path, pats: &[Regex], size: Option<u64>) {
