@@ -87,6 +87,11 @@ fn main() {
                         .required(false)
                         .multiple_values(true),
                 )
+                .arg(
+                 Arg::from("-s, --simulate 'Print the contents of the file with replacement, without overwriting it'")
+                     .takes_value(false)
+                     .required(false)
+                )
         )
         .get_matches();
     // .get_matches_from(vec!["rust", "find", "--patterns=.*/.rs", "--output=./tests.out", "--dirs=./"]);
