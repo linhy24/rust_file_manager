@@ -1,5 +1,8 @@
 use clap::{App, Arg}; // tell Rust you will use these two structs in clap
-use lib::{run_add, run_find, run_remove, run_tr, AddConfig, FindConfig, RemoveConfig, TrConfig}; // tell Rust you will use these two things from our "lib" module
+use lib::{
+    run_add, run_find, run_grep, run_remove, run_tr, AddConfig, FindConfig, GrepConfig,
+    RemoveConfig, TrConfig,
+}; // tell Rust you will use these two things from our "lib" module
 
 fn main() {
     // Define command-line interface
@@ -113,6 +116,21 @@ fn main() {
                      .required(false)
                 )
         )
+        .subcommand(
+            App::new("grep")
+                .arg(
+                    Arg::from("-p, --patterns=<pattern> 'pattern to be searched'")
+                        .takes_value(true)
+                        .multiple_values(true)
+                        .required(true)
+                )
+                .arg(
+                    Arg::from("-f, --filenames=<filename> 'name of file to be searched'")
+                        .takes_value(true)
+                        .multiple_values(true)
+                        .required(true)
+                )
+        )
         .get_matches();
     // .get_matches_from(vec!["rust", "find", "--patterns=.*/.rs", "--output=./tests.out", "--dirs=./"]);
 
@@ -141,6 +159,13 @@ fn main() {
         let args = TrConfig::from_args(&sub_m);
 
         if let Err(err) = run_tr(&args) {
+            //Error handling here!
+            panic!("{}", err)
+        }
+    } else if let Some(sub_m) = matches.subcommand_matches("grep") {
+        let args = GrepConfig::from_args(&sub_m);
+
+        if let Err(err) = run_grep(&args) {
             //Error handling here!
             panic!("{}", err)
         }

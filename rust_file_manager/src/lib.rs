@@ -1,13 +1,14 @@
 use clap::ArgMatches;
 use regex::Regex;
+use shlex;
 use std::fs;
 use std::fs::File;
+use std::io::Read;
+use std::process::Command;
 use std::{
     io::Write,
     path::{Path, PathBuf},
 };
-use std::process::Command;
-use shlex;
 
 /**************************** rust_add starts **************************** */
 pub fn run_add(config: &AddConfig) -> Result<(), &'static str> {
@@ -159,15 +160,21 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
 
         if let Some(sv) = display(&matched_files, &mut output) {
             // string implements clone
-            let paths = matched_files.iter().map(|x| x.path.clone()).collect::<Vec<_>>();
+            let paths = matched_files
+                .iter()
+                .map(|x| x.path.clone())
+                .collect::<Vec<_>>();
             if let Some(exec) = config.exec {
                 // split strings in accordance with shell expansion
                 let cmd = shlex::split(exec).unwrap();
                 // find the index of the replace string
                 // the replace string technically does not have to be there
-                let pos = cmd.iter().position(|x| x == config.replace.unwrap()).unwrap();
+                let pos = cmd
+                    .iter()
+                    .position(|x| x == config.replace.unwrap())
+                    .unwrap();
                 if config.all {
-                    let cmd = [&cmd[..pos], &paths, &cmd[(pos+1)..]].concat();
+                    let cmd = [&cmd[..pos], &paths, &cmd[(pos + 1)..]].concat();
                     // run command with all files as args
                     Command::new(&cmd[0])
                         .args(&cmd[1..])
@@ -177,7 +184,7 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
                     // run 1 command per each file
                     // TODO: specify threads
                     for path in paths {
-                        let cmd = [&cmd[..pos], &[path], &cmd[(pos+1)..]].concat();
+                        let cmd = [&cmd[..pos], &[path], &cmd[(pos + 1)..]].concat();
                         Command::new(&cmd[0])
                             .args(&cmd[1..])
                             .spawn()
@@ -294,7 +301,6 @@ impl<'a> FindConfig<'a> {
     pub fn parse_replace(&self) {
         // should check that the string is valid
     }
-
 }
 
 pub fn get_matched_files(files: &mut Vec<MyFile>, dir: &Path, pats: &[Regex], size: Option<u64>) {
@@ -525,3 +531,79 @@ pub fn replace_words(content: &mut Option<String>, replace: Vec<&str>) -> Option
 }
 
 /**************************** rust_tr ends **************************** */
+
+/**************************** rust_grep start *****************************/
+
+pub struct GrepConfig<'a> {
+    pub patterns: Vec<&'a str>,
+    pub filenames: Vec<&'a str>,
+}
+
+pub fn run_grep(config: &GrepConfig) -> Result<(), &'static str> {
+    let v_patterns: Vec<Regex> = config.parse_patterns()?;
+    let v_files: Vec<&str> = config.parse_files()?;
+
+    for pattern in v_patterns {
+        println!("Searching for lines matching {}", pattern);
+        for filename in &v_files {
+            let mut f = File::open(filename).unwrap();
+            let mut contents = String::new();
+
+            f.read_to_string(&mut contents);
+            let mut line_number = 1;
+            println!("Looking inside {}", filename);
+            for line in contents.lines() {
+                // if line.contains(pattern) {
+                if pattern.is_match(line) {
+                    println!("{}: {}", line_number, line);
+                }
+                line_number += 1;
+            }
+            println!("Done looking inside {}", filename);
+        }
+        println!("Done searching for lines matching {}", pattern);
+    }
+
+    Ok(())
+}
+
+impl<'a> GrepConfig<'a> {
+    pub fn from_args(args: &'a ArgMatches) -> Self {
+        let patterns: Vec<&'a str> = args.values_of("patterns").unwrap().collect();
+        let filenames: Vec<&'a str> = args.values_of("filenames").unwrap().collect();
+
+        GrepConfig {
+            patterns,
+            filenames,
+        }
+    }
+
+    pub fn parse_patterns(&self) -> Result<Vec<Regex>, &'static str> {
+        let mut res: Vec<Regex> = Vec::new();
+        let mut parsed = false;
+        for p in &self.patterns {
+            if let Ok(rgx) = Regex::new(p) {
+                res.push(rgx);
+                parsed = true;
+            } else {
+                eprintln!("{} is not a valid regular expression, ignoring", p);
+            }
+        }
+        if parsed {
+            Ok(res)
+        } else {
+            Err("No valid regex given")
+        }
+    }
+
+    pub fn parse_files(&self) -> Result<Vec<&str>, &'static str> {
+        let mut res: Vec<&str> = Vec::new();
+
+        for f in &self.filenames {
+            res.push(*f);
+        }
+
+        Ok(res)
+    }
+}
+/**************************** rust_grep ends *****************************/
