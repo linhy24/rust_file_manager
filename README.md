@@ -7,13 +7,13 @@
 Our project is to make a CLI that will perform basic linux file management. The CLI would have 6 commands (and additional flags) to emulate basic linux commands.
 
 These commands would map to the linux commands listed below.
-- rust-add -> touch and mkdir
+- rust-add -> touch
 - rust-remove  -> rm
 - rust-find -> rust_find, extended with the --exec flag to mimic find --exec
 - rust-grep -> grep
 - rust-diff -> diff
-- rust-tr -> (tr++) modified <strong>tr</strong> for word substitution
-- -thread -> make use of threading
+- rust-tr -> (tr++) modified <strong>tr</strong> for word deletion & substitution
+- make use of threading (as our stretch goal)
 
 In the end, users should be able to call a “super” command that unifies the functionalities of all three commands above. For instance, a command can contain the functionalities of -a(add), -r(remove), and -f(find). We expect to make use of rust crates like clap to implement our project.
 
