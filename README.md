@@ -28,12 +28,13 @@ cargo build
     - use find with the --exec flag to run a command once per found file. The command should be quoted. The command must include a replace string defined with --replace, which will replace the first occurence of the string with filenames. Use the --all flag to run the command with all files, or omit that flag to run the command once for every file.
     - `target/debug/rust find -p '.*\.rs' -d ./src --exec 'echo {}' --replace {}`
     - `target/debug/rust find -p '.*\.rs' -d ./src --exec 'sort {}' --replace {} --all`
-- <strong>add</strong>: `target/debug/rust add -f 'test.txt' -d ./src ./tests`
-- <strong>remove</strong>: `target/debug/rust remove -f 'test.txt' -d ./src ./tests`
-- <strong>tr++</strong>:
+- <strong>add</strong>: `target/debug/rust add -f 'test.txt' 'test2.txt' -d ./src ./tests`
+- <strong>remove</strong>: `target/debug/rust remove -f 'test.txt' 'test2.txt' -d ./src ./tests`
+- <strong>tr++</strong>: 
     - GNU tr only modifies characters. tr++ modifies words.
     - `target/debug/rust tr -f 'test.txt' -p ./src -d "Hey"`
     - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi"`
+    - `target/debug/rust tr -f 'test.txt' -p ./src -d "Ho" -r "Hey" "Hi"`
     - use tr without actually modify the file (only simulate the result after replacing/deleting):
     - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi" --simulate`
     
