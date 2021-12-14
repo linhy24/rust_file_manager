@@ -55,6 +55,9 @@ mod tests {
             patterns,
             output: None,
             size: None,
+            exec: None,
+            replace: None,
+            all: false,
         };
         let res = cfg.parse_dirs();
         assert!(res.is_ok());
@@ -88,7 +91,10 @@ mod tests {
             dirs,
             patterns,
             output: None,
-            size,
+            size: None,
+            exec: None,
+            replace: None,
+            all: false,
         };
         let res = cfg.parse_size();
         assert!(res.is_some());
@@ -123,6 +129,9 @@ mod tests {
             patterns,
             output: None,
             size: None,
+            exec: None,
+            replace: None,
+            all: false,
         };
         let res = cfg.parse_patterns();
         assert!(res.is_ok());
