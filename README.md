@@ -16,20 +16,30 @@ These commands would map to the linux commands listed below.
 
 We plan to adopt the idea of threading as our stretch goal. The idea is that some commands may have multiple inputs so we can use threads to process each input. Users use a flag -thread to indicate that they want to run the command using threads.
 
+## Build
+
+```
+cd rust_file_manager
+cargo build
+```
+
 ## Example usage
 - <strong>find</strong>: `target/debug/rust find -p '.*\.rs' -d ./src`
-    - use find with the --exec flag to run a command once per found file, optionally with the --all flag to run a command with all files
+    - use find with the --exec flag to run a command once per found file. The command should be quoted. The command must include a replace string defined with --replace, which will replace the first occurence of the string with filenames. Use the --all flag to run the command with all files, or omit that flag to run the command once for every file.
     - `target/debug/rust find -p '.*\.rs' -d ./src --exec 'echo {}' --replace {}`
     - `target/debug/rust find -p '.*\.rs' -d ./src --exec 'sort {}' --replace {} --all`
 - <strong>add</strong>: `target/debug/rust add -f 'test.txt' -d ./src ./tests`
 - <strong>remove</strong>: `target/debug/rust remove -f 'test.txt' -d ./src ./tests`
-- <strong>tr++</strong>: 
+- <strong>tr++</strong>:
+    - GNU tr only modifies characters. tr++ modifies words.
     - `target/debug/rust tr -f 'test.txt' -p ./src -d "Hey"`
     - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi"`
     - use tr without actually modify the file (only simulate the result after replacing/deleting):
     - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi" --simulate`
     
-- <strong>grep</strong>: `target/debug/rust grep --patterns '^\[' --filenames 'Cargo.toml'`
+- <strong>grep</strong>:
+    - find lines containing a regex pattern.
+    - `target/debug/rust grep --patterns '^\[' --filenames 'Cargo.toml'`
 
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
