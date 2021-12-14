@@ -25,7 +25,7 @@ We plan to adopt the idea of threading as our stretch goal. The idea is that som
 - <strong>remove</strong>: `target/debug/rust remove -f 'test.txt' -d ./src ./tests`
 - <strong>tr++</strong>: 
     - `target/debug/rust tr -f 'test.txt' -p ./src -d "Hey"`
-    - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi"`(Please add your own testing content into 'test.txt')
+    - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi"`
     - use tr without actually modify the file (only simulate the result after replacing/deleting):
     - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi" --simulate`
     
