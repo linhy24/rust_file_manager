@@ -1,6 +1,6 @@
 use clap::ArgMatches;
 use regex::Regex;
-use shlex;
+use shlex::split;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
@@ -166,7 +166,7 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
                 .collect::<Vec<_>>();
             if let Some(exec) = config.exec {
                 // split strings in accordance with shell expansion
-                let cmd = shlex::split(exec).unwrap();
+                let cmd = split(exec).unwrap();
                 // find the index of the replace string
                 // the replace string technically does not have to be there
                 let pos = cmd
@@ -202,7 +202,6 @@ pub fn run_find(config: &FindConfig) -> Result<(), &'static str> {
     Ok(())
 }
 
-// TODO: move this code to the outside...
 pub struct FindConfig<'a> {
     pub dirs: Vec<&'a str>,
     pub patterns: Vec<&'a str>,
@@ -402,18 +401,16 @@ pub fn run_tr(config: &TrConfig) -> Result<(), &'static str> {
     if let Some(c) = content {
         if config.simulate {
             println!("{}", c);
-        } else {
-            if let Some(p) = path {
-                // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
-                if let Some(f) = config.file {
-                    let file_path = p.join(f);
-                    match fs::write(file_path, c) {
-                        Ok(_) => {
-                            println!("Your operation is successful this time!")
-                        }
-                        Err(err) => {
-                            eprintln!("Failed to write to file, {}", err);
-                        }
+        } else if let Some(p) = path {
+            // writeln!(file.unwrap(), "{}", c).expect("Unable to write to file");
+            if let Some(f) = config.file {
+                let file_path = p.join(f);
+                match fs::write(file_path, c) {
+                    Ok(_) => {
+                        println!("Your operation is successful this time!")
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to write to file, {}", err);
                     }
                 }
             }
@@ -549,7 +546,11 @@ pub fn run_grep(config: &GrepConfig) -> Result<(), &'static str> {
             let mut f = File::open(filename).unwrap();
             let mut contents = String::new();
 
-            f.read_to_string(&mut contents);
+            // https://stackoverflow.com/questions/53368303/why-am-i-getting-unused-result-which-must-be-used-result-may-be-an-err-vari/53368681#53368681
+            if let Err(e) = f.read_to_string(&mut contents) {
+                eprintln!("{:?}", e)
+            }
+
             let mut line_number = 1;
             println!("Looking inside {}", filename);
             for line in contents.lines() {

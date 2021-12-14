@@ -2,7 +2,7 @@ use clap::{App, Arg}; // tell Rust you will use these two structs in clap
 use lib::{
     run_add, run_find, run_grep, run_remove, run_tr, AddConfig, FindConfig, GrepConfig,
     RemoveConfig, TrConfig,
-}; // tell Rust you will use these two things from our "lib" module
+}; // tell Rust you will use these many things from our "lib" module
 
 fn main() {
     // Define command-line interface
@@ -135,38 +135,34 @@ fn main() {
     // .get_matches_from(vec!["rust", "find", "--patterns=.*/.rs", "--output=./tests.out", "--dirs=./"]);
 
     if let Some(sub_m) = matches.subcommand_matches("find") {
-        let args = FindConfig::from_args(&sub_m); // will be defined later
+        let args = FindConfig::from_args(sub_m);
 
         if let Err(err) = run_find(&args) {
             //Error handling here!
             panic!("{}", err)
         }
     } else if let Some(sub_m) = matches.subcommand_matches("add") {
-        let args = AddConfig::from_args(&sub_m); // will be defined later
+        let args = AddConfig::from_args(sub_m);
 
         if let Err(err) = run_add(&args) {
-            //Error handling here!
             panic!("{}", err)
         }
     } else if let Some(sub_m) = matches.subcommand_matches("remove") {
-        let args = RemoveConfig::from_args(&sub_m);
+        let args = RemoveConfig::from_args(sub_m);
 
         if let Err(err) = run_remove(&args) {
-            //Error handling here!
             panic!("{}", err)
         }
     } else if let Some(sub_m) = matches.subcommand_matches("tr") {
-        let args = TrConfig::from_args(&sub_m);
+        let args = TrConfig::from_args(sub_m);
 
         if let Err(err) = run_tr(&args) {
-            //Error handling here!
             panic!("{}", err)
         }
     } else if let Some(sub_m) = matches.subcommand_matches("grep") {
-        let args = GrepConfig::from_args(&sub_m);
+        let args = GrepConfig::from_args(sub_m);
 
         if let Err(err) = run_grep(&args) {
-            //Error handling here!
             panic!("{}", err)
         }
     }
