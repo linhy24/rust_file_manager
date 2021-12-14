@@ -26,6 +26,7 @@ We plan to adopt the idea of threading as our stretch goal. The idea is that som
 - <strong>tr++</strong>: 
     - `target/debug/rust tr -f 'test.txt' -p ./src -d "Hey"`
     - `target/debug/rust tr -f 'test.txt' -p ./src -r "Hey" "Hi"`(Please add your own testing content into 'test.txt')
+- <strong>grep</grep>: `target/debug/rust grep --patterns '^\[' --filenames Cargo.toml`
 
 ## Goals
 - 100% goal, representing what you expect to achieve:<br/>
