@@ -43,7 +43,6 @@ Implement threading for each command and add more flags/options for customizatio
 
 ## Specific aims and objectives
 - Emulate the functionality of linux commands using Rust
-- Unify the commands under one “super” command/CLI
 
 ## Cited references
 https://github.com/cmsc388z/assignments/blob/main/assignment3/assignment3.md<br/> 
